@@ -2,7 +2,7 @@
 
 require_once WP_Securing_Setup::ROOT . DIRECTORY_SEPARATOR . 'includes/class-wpss-server-directives.php';
 require_once WP_Securing_Setup::ROOT . DIRECTORY_SEPARATOR . 'includes/interface-wpss-server-directives.php';
-require_once ABSPATH . 'wp-admin/includes/misc.php';
+//require_once ABSPATH . 'wp-admin/includes/misc.php';  // TODO: To be removed
 
 class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IWPSS_Server_Directives
 {
@@ -53,7 +53,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
             return false;
         }
 
-        $current_rules = extract_from_markers($htaccess_file, $marker);
+        $current_rules = sswp_extract_from_markers($htaccess_file, $marker);
 
         // Read the contents of the htaccess file
         $htaccess_content = $this->wp_filesystem->get_contents($htaccess_file);
@@ -81,7 +81,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
         $new_rules = array_merge($current_rules, explode("\n", $rules));
 
         // Insert the new rules with the marker
-        return insert_with_markers($htaccess_file, $marker, $new_rules);
+        return sswp_insert_with_markers($htaccess_file, $marker, $new_rules);
     }
 
     /**
@@ -104,7 +104,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
         }
 
         // Extract the current rules for the given marker
-        $extracted_rules = extract_from_markers($htaccess_file, $marker);
+        $extracted_rules = sswp_extract_from_markers($htaccess_file, $marker);
 
         if (empty($extracted_rules) ) {
             return true; // Nothing to remove, so we consider it a success
@@ -138,19 +138,22 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 
     public function protect_debug_log()
     {
-        $htaccess_path = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . '.htaccess';
-        $rules         = <<<EOD
-<Files debug.log>
-    Order allow,deny
-    Deny from all
-</Files>
-EOD;
+        $htaccess_path = ABSPATH . '.htaccess';
+        
+        $rules  = '<Directory "' . WP_CONTENT_DIR . '">' . PHP_EOL;
+        $rules .= '    <FilesMatch "\\.log$">' . PHP_EOL;
+        $rules .= '        Require all denied' . PHP_EOL;
+        $rules .= '    </FilesMatch>' . PHP_EOL;
+        $rules .= '</Directory>' . PHP_EOL;
+
+
+
         return $this->add_rule($rules, $htaccess_path, 'protect-log');
     }
 
     public function unprotect_debug_log()
     {
-        $htaccess_path = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . '.htaccess';
+        $htaccess_path = ABSPATH . '.htaccess';
         return $this->remove_rule($htaccess_path, 'protect-log');
     }
 
@@ -158,27 +161,14 @@ EOD;
     {
         // NOTE: Configuration not suitable for all setup
         $htaccess_path = ABSPATH . '.htaccess';
-        /*
-        $rules         = <<<EOD
-        RewriteEngine On
 
-        # Block access to the users endpoint for any version of the API
-        RewriteRule ^wp-json/wp/v[0-9]+/users.*$ - [R=404,L]
-
-        # Redirect query strings with author to the provided page
-        RewriteCond %{QUERY_STRING} author=\d
-        RewriteRule (.*) {$page} [L,R=301,QSD]
-        EOD;
-        */
-        $rules = <<<EOD
-# Custom Rate Limiting for /wp-json/wp/v2/users
-<IfModule mod_ratelimit.c>
-    <Location /wp-json/wp/v2/users>
-        SetOutputFilter RATE_LIMIT
-        SetEnv rate-limit 10
-    </Location>
-</IfModule>
-EOD;
+        $rules  = '# Custom Rate Limiting for /wp-json/wp/v2/users' . PHP_EOL;
+        $rules .= '<IfModule mod_ratelimit.c>' . PHP_EOL;
+        $rules .= '    <Location /wp-json/wp/v2/users>' . PHP_EOL;
+        $rules .= '        SetOutputFilter RATE_LIMIT' . PHP_EOL;
+        $rules .= '        SetEnv rate-limit 10' . PHP_EOL;
+        $rules .= '    </Location>' . PHP_EOL;
+        $rules .= '</IfModule>' . PHP_EOL;
         return $this->add_rule($rules, $htaccess_path, 'protect-rest-api');
     }
 
@@ -192,30 +182,27 @@ EOD;
     public function allow_file_access( $file_pattern )
     {
         $file_pattern_regex = $this->file_ext_regex_creator($file_pattern);
-        $htaccess_path      = WP_CONTENT_DIR . '/uploads/.htaccess';
-        $rules              = <<<EOD
-<FilesMatch "{$file_pattern_regex}">
-    Require all granted
-</FilesMatch>
-EOD;
-        $res                = $this->add_rule($rules, $htaccess_path, 'protect-uploads');
-        if ($res ) {
-            $rules = <<<EOD
-<FilesMatch ".*">
-    Require all denied
-</FilesMatch>           
-EOD;
-            $res   = $this->add_rule($rules, $htaccess_path, 'protect-uploads');
-            if (! $res ) {
-                $this->remove_apache_rule($htaccess_path, 'protect-uploads');
-            }
-        }
-        return $res;
+        $htaccess_path = ABSPATH . '/.htaccess';
+
+        $upload_dir = wp_upload_dir(); // Get the upload directory details
+
+        $rules = '<Directory "' . $upload_dir['path'] . '">' . PHP_EOL;
+        $rules  .= '<FilesMatch "' . $file_pattern_regex . '">' . PHP_EOL;
+        $rules .= '    Require all granted' . PHP_EOL;
+        $rules .= '</FilesMatch>' . PHP_EOL;
+        $rules  .= '<FilesMatch ".*">' . PHP_EOL; // Start FilesMatch directive
+        $rules .= '    Require all denied' . PHP_EOL; // Add rule to deny all access
+        $rules .= '</FilesMatch>' . PHP_EOL; // Close FilesMatch directive
+        $rules .=  '</Directory>' . PHP_EOL;
+        $rules .= '</Directory>' . PHP_EOL; // Close Directory directive
+
+
+        return   $this->add_rule($rules, $htaccess_path, 'protect-uploads');
     }
 
     public function disallow_file_access()
     {
-        $htaccess_path = WP_CONTENT_DIR . '/uploads/.htaccess';
+        $htaccess_path = ABSPATH . '/.htaccess';
 
         return $this->remove_rule($htaccess_path, 'protect-uploads');
     }
