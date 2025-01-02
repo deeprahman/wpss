@@ -16,7 +16,7 @@ function wpss_limit_rest_api_rate($result, $server, $request)
     $route = $request->get_route();
     // Target only the desired endpoints
     if (!in_array($route, $endpoints, true)) {
-        return $result;
+        return false;
     }
 
     // Get the client IP address
@@ -54,7 +54,7 @@ function wpss_handle_rate_limiting( $result, $server, $request )
 {
     global $wpss;
     $ht_form_settings = ( get_options(array( $wpss->settings )) )['_wpss_settings']['htaccess']['ht_form'];
-    $output = true;
+    $output = false;
         array_walk(
             $ht_form_settings,
             function ( $v ) use ($result, $server, $request,&$output) {
