@@ -3,45 +3,43 @@
 class WPSS_Apache_Directives_Validator
 {
 
-    // Define a list of known directives for basic validation
+    // Existing directives array remains unchanged
     private $directives = array(
-    'ServerName',
-    'DocumentRoot',
-    'DirectoryIndex',
-    'AllowOverride',
-    'Require',
-    'Options',
-    'ErrorLog',
-    'CustomLog',
-    'Listen',
-    'VirtualHost',
-    'RewriteEngine',
-    'RewriteRule',
-    'SSLEngine',
-    'SSLProtocol',
-    'SSLCertificateFile',
-    'SSLCertificateKeyFile',
-    'Order',
-    'Allow',
-    'Deny',
-    'RewriteCond',
-    'SetEnvIfNoCase'
-    // Add more Apache directives as needed
+        'ServerName',
+        'DocumentRoot',
+        'DirectoryIndex',
+        'AllowOverride',
+        'Require',
+        'Options',
+        'ErrorLog',
+        'CustomLog',
+        'Listen',
+        'VirtualHost',
+        'RewriteEngine',
+        'RewriteRule',
+        'SSLEngine',
+        'SSLProtocol',
+        'SSLCertificateFile',
+        'SSLCertificateKeyFile',
+        'Order',
+        'Allow',
+        'Deny',
+        'RewriteCond',
+        'SetEnvIfNoCase'
     );
 
-    // Define a list of known block directives
     private $blockDirectives = array(
-    'Files',
-    'FilesMatch',
-    'Directory',
-    'DirectoryMatch',
-    'Location',
-    'LocationMatch',
-    // Add more block directives as needed
+        'Files',
+        'FilesMatch',
+        'Directory',
+        'DirectoryMatch',
+        'Location',
+        'LocationMatch',
+        'VirtualHost'
     );
 
     // Property to store the last validation message
-    private $lastValidationMessage = '';
+     private $lastValidationMessage = '';
 
     /**
      * Main validation method.
@@ -50,26 +48,28 @@ class WPSS_Apache_Directives_Validator
      * @param  string $input The directive string to validate.
      * @return string Validation result message.
      */
-    public function validate( $input )
+    public function validate($input)
     {
-        // Normalize line endings and trim whitespace
         $input = trim(preg_replace('/\r\n|\r|\n/', "\n", $input));
-
-        // Check if it's a block directive using regex
-        if (preg_match('/^\s*<(\w+)\s+(.*?)>\s*(.*?)\s*<\/\1>\s*$/s', $input, $matches) ) {
-            $blockName    = $matches[1];
-            $blockArg     = $matches[2];
+        
+        // Enhanced regex to handle nested blocks
+        if (preg_match('/^\s*<(\w+)\s+(.*?)>\s*(.*?)\s*(<\/\1>)+\s*$/s', $input, $matches)) {
+            $blockName = $matches[1];
+            $blockArg = $matches[2];
             $innerContent = $matches[3];
-
+            
+            // Count closing tags to match with opening tags
+            $closingTags = substr_count($matches[4], '</');
+            if ($closingTags > 1) {
+                return "Invalid block structure: Extra closing tags found.";
+            }
+            
             $result = $this->validateBlockDirective($blockName, $blockArg, $innerContent);
         } else {
-            // Assume it's single or multiple directives
             $result = $this->validateMultipleDirectives($input);
         }
 
-        // Store the last validation message
         $this->lastValidationMessage = $result;
-
         return $result;
     }
 
@@ -79,20 +79,12 @@ class WPSS_Apache_Directives_Validator
      * @param  string $input The directive string to validate.
      * @return bool True if valid, False otherwise.
      */
-    public function is_valid( $input )
+    public function is_valid($input)
     {
-        // Validate the input directive string
         $validationResult = $this->validate($input);
-
-        // Log the input and the validation result for debugging
-
-        // Check if the validation result contains "Invalid"
-        if (preg_match('/\bInvalid\b/i', $validationResult) ) {
-            // Log that the result was invalid
+        if (preg_match('/\bInvalid\b/i', $validationResult)) {
             return false;
         }
-
-        // If no "Invalid" is found, return true for valid input
         return true;
     }
 
@@ -195,41 +187,110 @@ class WPSS_Apache_Directives_Validator
      * @param  string $innerContent The inner content of the block.
      * @return string Validation result message.
      */
-    private function validateBlockDirective( $blockName, $blockArg, $innerContent )
+    private function validateBlockDirective($blockName, $blockArg, $innerContent)
     {
-        // Check if blockName is recognized
-        if (! in_array($blockName, $this->blockDirectives) ) {
+        if (!in_array($blockName, $this->blockDirectives)) {
             return "Unknown block directive: <$blockName>.";
         }
 
         // Validate block argument based on block type
-        if ($blockName === 'Files' ) {
-            if (! $this->validateFilename($blockArg) ) {
-                return "Invalid argument for <$blockName>: '$blockArg'.";
-            }
-        } elseif ($blockName === 'FilesMatch' ) {
-            if (! $this->validateRegex($blockArg) ) {
-                return "Invalid regex pattern for <$blockName>: '$blockArg'.";
+        $argValidation = $this->validateBlockArgument($blockName, $blockArg);
+        if ($argValidation !== true) {
+            return $argValidation;
+        }
+
+        // Check for nested blocks in the inner content
+        if (preg_match_all('/<(\w+)\s+(.*?)>/', $innerContent, $nestedMatches)) {
+            foreach ($nestedMatches[1] as $index => $nestedBlockName) {
+                $nestedArg = $nestedMatches[2][$index];
+                
+                // Extract the content between nested tags
+                $pattern = '/<' . preg_quote($nestedBlockName) . '\s+' . preg_quote($nestedArg, '/') . '>(.*?)<\/' . preg_quote($nestedBlockName) . '>/s';
+                if (preg_match($pattern, $innerContent, $contentMatch)) {
+                    $nestedContent = $contentMatch[1];
+                    $nestedValidation = $this->validateBlockDirective($nestedBlockName, $nestedArg, $nestedContent);
+                    if (strpos($nestedValidation, 'Invalid') === 0) {
+                        return $nestedValidation;
+                    }
+                }
             }
         }
-        // Add additional block directive argument validations as needed
 
-        // Split inner content into lines and validate each directive
+        // Validate remaining directives in the inner content
         $lines = explode("\n", $innerContent);
-        foreach ( $lines as $lineNumber => $line ) {
+        foreach ($lines as $lineNumber => $line) {
             $line = trim($line);
-            if ($line === '' || strpos($line, '#') === 0 ) {
-                continue; // Skip empty lines and comments
+            if ($line === '' || strpos($line, '#') === 0) {
+                continue;
+            }
+
+            // Skip nested block lines
+            if (strpos($line, '<') === 0) {
+                continue;
             }
 
             // Validate inner directive
             $result = $this->validateDirectiveSyntax($line);
-            if (strpos($result, 'Valid') !== 0 ) { // If not starting with 'Valid'
-                return "Invalid directive inside <$blockName> at inner line " . ( $lineNumber + 1 ) . ": $result";
+            if (strpos($result, 'Valid') !== 0) {
+                return "Invalid directive inside <$blockName> at inner line " . ($lineNumber + 1) . ": $result";
             }
         }
 
         return "Valid block directive: <$blockName>.";
+    }
+
+
+    private function validateBlockArgument($blockName, $blockArg)
+    {
+        switch ($blockName) {
+        case 'Directory':
+            return $this->validateDirectoryPath($blockArg) ? true : 
+                    "Invalid Directory path: '$blockArg'.";
+            
+        case 'FilesMatch':
+            return $this->validateFilesMatchPattern($blockArg) ? true :
+                    "Invalid FilesMatch pattern: '$blockArg'.";
+            
+        case 'Files':
+            return $this->validateFilename($blockArg) ? true :
+                    "Invalid Files pattern: '$blockArg'.";
+            
+        default:
+            return true;
+        }
+    }
+
+
+    private function validateDirectoryPath($path)
+    {
+        // Remove quotes if present
+        $path = trim($path, '"\'');
+        
+        // Check if the path starts with a forward slash or drive letter (Windows)
+        return preg_match('~^(/|[a-zA-Z]:[\\/])~', $path) === 1;
+    }
+
+
+    private function validateFilesMatchPattern($pattern)
+    {
+        // Remove quotes if present
+        $pattern = trim($pattern, '"\'');
+        
+        // Validate common FilesMatch patterns
+        $validPatterns = [
+            '/^\\\\?\\.\\w+$/', // File extension (e.g., \.php)
+            '/^\\.\\*$/',       // All files (.*)
+            '/^[\\w\\-.*?]+$/'  // Simple wildcards and literal names
+        ];
+
+        foreach ($validPatterns as $validPattern) {
+            if (preg_match($validPattern, $pattern)) {
+                return true;
+            }
+        }
+
+        // For complex patterns, try to compile them
+        return @preg_match('/' . str_replace('/', '\\/', $pattern) . '/', '') !== false;
     }
 
     /**

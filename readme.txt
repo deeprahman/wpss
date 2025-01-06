@@ -1,5 +1,5 @@
 === Secure Setup ===
-Contributors: deeprahman, Shamim Akhter
+Contributors: deeprahman
 Tags: security, file permissions, .htaccess, WordPress security, REST API
 Requires at least: 5.2
 Tested up to: 6.7

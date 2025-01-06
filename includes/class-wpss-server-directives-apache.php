@@ -138,13 +138,11 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 
     public function protect_debug_log()
     {
-        $htaccess_path = ABSPATH . '.htaccess';
+        $htaccess_path = ABSPATH . DIRECTORY_SEPARATOR . '.htaccess';
         
-        $rules  = '<Directory "' . WP_CONTENT_DIR . '">' . PHP_EOL;
-        $rules .= '    <FilesMatch "\\.log$">' . PHP_EOL;
+        $rules = '    <FilesMatch "\.log$">' . PHP_EOL;
         $rules .= '        Require all denied' . PHP_EOL;
         $rules .= '    </FilesMatch>' . PHP_EOL;
-        $rules .= '</Directory>' . PHP_EOL;
 
 
 
@@ -153,7 +151,9 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 
     public function unprotect_debug_log()
     {
-        $htaccess_path = ABSPATH . '.htaccess';
+        
+        $htaccess_path = ABSPATH . DIRECTORY_SEPARATOR . '.htaccess';
+
         return $this->remove_rule($htaccess_path, 'protect-log');
     }
 
@@ -181,20 +181,16 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 
     public function allow_file_access( $file_pattern )
     {
+        $uploads = wp_upload_dir();
+        $htaccess_path = $uploads['basedir'] . DIRECTORY_SEPARATOR . '.htaccess';
         $file_pattern_regex = $this->file_ext_regex_creator($file_pattern);
-        $htaccess_path = ABSPATH . '/.htaccess';
 
-        $upload_dir = wp_upload_dir(); // Get the upload directory details
-
-        $rules = '<Directory "' . $upload_dir['path'] . '">' . PHP_EOL;
-        $rules  .= '<FilesMatch "' . $file_pattern_regex . '">' . PHP_EOL;
+        $rules  = '<FilesMatch "' . $file_pattern_regex . '">' . PHP_EOL;
         $rules .= '    Require all granted' . PHP_EOL;
         $rules .= '</FilesMatch>' . PHP_EOL;
         $rules  .= '<FilesMatch ".*">' . PHP_EOL; // Start FilesMatch directive
         $rules .= '    Require all denied' . PHP_EOL; // Add rule to deny all access
         $rules .= '</FilesMatch>' . PHP_EOL; // Close FilesMatch directive
-        $rules .=  '</Directory>' . PHP_EOL;
-        $rules .= '</Directory>' . PHP_EOL; // Close Directory directive
 
 
         return   $this->add_rule($rules, $htaccess_path, 'protect-uploads');
@@ -202,8 +198,9 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 
     public function disallow_file_access()
     {
-        $htaccess_path = ABSPATH . '/.htaccess';
 
+        $uploads = wp_upload_dir();
+        $htaccess_path = $uploads['basedir'] . DIRECTORY_SEPARATOR . '.htaccess';
         return $this->remove_rule($htaccess_path, 'protect-uploads');
     }
 
