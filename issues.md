@@ -80,33 +80,6 @@ https://developer.wordpress.org/reference/functions/wp_upload_dir/
 
 Example(s) from your plugin:
 wpss-logger.php:23 file_put_contents($log_file, $formatted_log, FILE_APPEND);
-# ↳ Detected: plugin_dir_path
-
-
-## Sanitization for register_setting()
-
-Fields registered through register_setting() should be sanitized properly.
-
-Fortunately, in this case, it is very easy to indicate which function should be used to sanitize the input. ✨
-
-The third argument of this function accepts an array() in which you can add your sanitizing function in the sanitize_callback key.
-
-Just like this:
-register_setting(
-    'pluginprefix_group',
-    'pluginprefix_option_name',
-    array(
-        'type'              => 'string',
-        'sanitize_callback' => 'sanitize_text_field',
-    )
-);
-
-Make sure you use a proper sanitization function (WordPress has plenty of them!) and add other options as needed.
-
-Please, check out the register_setting() documentation for more information and code examples.
-
-Example(s) from your plugin:
-includes/settings/wpss-default-settings.php:14 register_setting('wpss_options_group', WPSS_SETTINGS);
 
 
 ## Internationalization: Don't use variables or defines as text, context or text domain parameters.

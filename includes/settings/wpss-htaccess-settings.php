@@ -24,8 +24,7 @@ $htaccess_from_settings['ht_form'] = array(
 	),
 	array(
 		'name'  => 'allowed_files',
-		'value' => array(
-		),
+		'value' => array(),
 	),
 );
 
