@@ -82,47 +82,7 @@ Example(s) from your plugin:
 wpss-logger.php:23 file_put_contents($log_file, $formatted_log, FILE_APPEND);
 
 
-## Internationalization: Don't use variables or defines as text, context or text domain parameters.
 
-In order to make a string translatable in your plugin you are using a set of special functions. These functions collectively are known as "gettext".
-
-There is a dedicated team in the WordPress community to translate and help other translating strings of WordPress core, plugins and themes to other languages.
-
-To make them be able to translate this plugin, please do not use variables or function calls for the text, context or text domain parameters of any gettext function, all of them NEED to be strings. Note that the translation parser reads the code without executing it, so it won't be able to read anything that is not a string within these functions.
-
-For example, if your gettext function looks like this...
-esc_html__( $greetings , 'secure-setup' );
-...the translator won't be able to see anything to be translated as $greetings is not a string, it is not something that can be translated.
-You need to give them the string to be translated, so they can see it in the translation system and can translate it, the correct would be as follows...
-esc_html__( 'Hello, how are you?' , 'secure-setup' );
-
-This also applies to the translation domain, this is a bad call:
-esc_html__( 'Hello, how are you?' , $plugin_slug );
-The fix here would be like this
-esc_html__( 'Hello, how are you?' , 'secure-setup' );
-Also note that the translation domain needs to be the same as your plugin slug.
-
-What if we want to include a dynamic value inside the translation? Easy, you need to add a placeholder which will be part of the string and change it after the gettext function does its magic, you can use printf to do so, like this:
-printf(
-
-      /* translators: %s: First name of the user */
-      esc_html__( 'Hello %s, how are you?', 'secure-setup' ),
-      esc_html( $user_firstname )
-);
-
-You can read https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#text-domains for more information.
-
-Example(s) from your plugin:
-includes/wpss-htaccess-form.php:51 __('Your custom error message here', WP_Securing_Setup::DOMAIN);
-admin/templates/protection-form.htm.php:49 esc_html__('Save Settings', WP_Securing_Setup::DOMAIN);
-includes/class-wpss-file-permission-manager.php:424 __('Path is not ownerd by WordPress', WP_Securing_Setup::DOMAIN);
-admin/templates/protection-form.htm.php:43 esc_attr__('Redirect requests to the users REST endpoint to 404 HTTP error', WP_Securing_Setup::DOMAIN);
-admin/templates/protection-form.htm.php:17 esc_attr__('Protect the WordPress log at default location', WP_Securing_Setup::DOMAIN);
-includes/wpss-file-permission.php:53 __('Successfully reverted permission', WP_Securing_Setup::DOMAIN);
-admin/templates/protection-form.htm.php:23 esc_attr__('Select which file-types should have access to uploads directory', WP_Securing_Setup::DOMAIN);
-admin/wpss-files-permissions-tools-page.php:12 __('Files Permission', WP_Securing_Setup::DOMAIN);
-
-... out of a total of 24 incidences.
 
 ## Internationalization: Text domain does not match plugin slug.
 
