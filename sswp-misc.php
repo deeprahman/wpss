@@ -1,6 +1,6 @@
 <?php 
 
-function wpss_convert_to_octal_pers_from_string(string $perms):string|null
+function sswp_convert_to_octal_pers_from_string(string $perms):string|null
 {
         
 
@@ -27,7 +27,7 @@ function wpss_convert_to_octal_pers_from_string(string $perms):string|null
  *
  * @return string Client IP address or '0.0.0.0' if no valid IP found.
  */
-function wpss_get_client_ip()
+function sswp_get_client_ip()
 {
     $ip_keys = [
         'HTTP_CLIENT_IP',

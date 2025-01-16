@@ -20,11 +20,11 @@ var_dump($paths);
 
 try{
 
-    $pm = new WPSS_File_Permission_Manager($paths);
+    $pm = new SSWP_File_Permission_Manager($paths);
     $pm->display_results();
     $errors = array_filter($data, function($perms,$path) use($pm){
         $abspath = realpath(ABSPATH . $path);
-        $octperms = wpss_convert_to_octal_pers_from_string($perms);
+        $octperms = sswp_convert_to_octal_pers_from_string($perms);
         return $pm->change_file_permission($abspath,$octperms);
     },ARRAY_FILTER_USE_BOTH);
 

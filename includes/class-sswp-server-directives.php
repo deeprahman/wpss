@@ -4,7 +4,7 @@
  * TODO: To be other classes for nginx, apache, lightspeed and iis server
  */
 
-abstract class WPSS_Server_Directives {
+abstract class SSWP_Server_Directives {
 	protected $is_apache;
 	protected $is_nginx;
 	protected $is_litespeed;
@@ -38,5 +38,5 @@ abstract class WPSS_Server_Directives {
 	 * @param string $marker
 	 * @return void
 	 */
-	abstract protected function add_rule( string $rules, string $htaccess_path = '', string $marker = 'wpss' ): bool;
+	abstract protected function add_rule( string $rules, string $htaccess_path = '', string $marker = 'sswp' ): bool;
 }

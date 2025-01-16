@@ -1,6 +1,6 @@
 <?php
 
-class WPSS_File_Regex_Pattern_Creator {
+class SSWP_File_Regex_Pattern_Creator {
 
 	private $extensions;
 	private $extensionMap;
@@ -104,45 +104,4 @@ class WPSS_File_Regex_Pattern_Creator {
 	}
 }
 
-// Example usage:
-// $extensions = ['jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff'];
-// $extensionMap = [
-// 'jpg' => 'jpe?g',
-// 'jpeg' => 'jpe?g',
-// 'tif' => 'tiff?',
-// 'tiff' => 'tiff?'
-// ];
-//
-// $extModifier = new ExtensionModifier($extensions, $extensionMap);
-//
-// $regex = $extModifier->generateApacheExtensionRegex();
-//
-// echo "Input extensions: " . implode(', ', $extModifier->getExtensions()) . "\n";
-// echo "Generated Apache-compatible Regex: " . $regex . "\n\n";
-//
-// echo "Example Apache configuration:\n";
-// echo "<Files ~ \"" . $regex . "\">\n";
-// echo "    # Your Apache directives here\n";
-// echo "</Files>\n\n";
-//
-// Test the regex (using PHP's preg_match for demonstration)
-// $testStrings = [
-// 'image.jpg',
-// 'photo.JPEG',
-// 'picture.png',
-// 'animation.gif',
-// 'document.tif',
-// 'scan.tiff',
-// 'file.pdf',
-// 'script.js',
-// 'image.jpgg',
-// ];
-//
-// echo "Matching test (for demonstration purposes):\n";
-// foreach ($testStrings as $string) {
-// if (preg_match('/' . $regex . '/i', $string)) {
-// echo "$string: Matched\n";
-// } else {
-// echo "$string: Not matched\n";
-// }
-// }
+

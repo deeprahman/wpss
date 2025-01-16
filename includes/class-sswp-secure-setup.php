@@ -1,13 +1,13 @@
 <?php
 
-class WP_Securing_Setup {
+class SSWP_Secure_Setup {
 
 
-	public const ROOT = WPSS_ROOT;
+	public const ROOT = SSWP_ROOT;
 
 	public const DOMAIN = 'secure-setup';
 
-	public const URL = WPSS_URL;
+	public const URL = SSWP_URL;
 
 	public const VERSION = '0.1.0';
 
@@ -43,19 +43,19 @@ class WP_Securing_Setup {
 	public $rcmnd_perms = array();
 
 	/**
-	 * @var WPSS_File_Permission_Manager
+	 * @var SSWP_File_Permission_Manager
 	 */
 	public $fpm;
 
 	public function __construct() {
-		$this->name         = __( 'WP Securing Setup', self::DOMAIN );
+		$this->name         = __( 'Secure Setup', 'secure-setup' );
 		$this->root         = self::ROOT;
 		$this->domain       = self::DOMAIN;
-		$this->root_url     = WPSS_URL;
-		$this->js_handle    = 'wpss-primary-js';
-		$this->css_handle   = 'wpss-primary-css';
-		$this->nonce_action = 'wpss-rest';
-		$this->settings     = WPSS_SETTINGS;
+		$this->root_url     = SSWP_URL;
+		$this->js_handle    = 'sswp-primary-js';
+		$this->css_handle   = 'sswp-primary-css';
+		$this->nonce_action = 'sswp-rest';
+		$this->settings     = SSWP_SETTINGS;
 				$this->init();
 	}
 
@@ -79,7 +79,7 @@ class WP_Securing_Setup {
 	}
 
 	public function enqueue_admin_js( $admin_page ) {
-			global $wpss;
+			global $sswp;
 			wp_enqueue_script( 'wp-api-request' );
 			include_once $this->root . '/includes/enqueue-scripts/wpss-enqueue-admin-scripts.php';
 	}
@@ -88,7 +88,7 @@ class WP_Securing_Setup {
 	}
 
 	public function admin_pages() {
-			global $wpss;
+			global $sswp;
 			include_once $this->root . '/admin/wpss-files-permissions-tools-page.php';
 	}
 
@@ -112,10 +112,10 @@ class WP_Securing_Setup {
 	 */
 	public function set_fpm() {
 			include_once $this->root . 'includes/class-wpss-file-permission-manager.php';
-			$this->fpm = new WPSS_File_Permission_Manager( $this->file_paths, $this->rcmnd_perms );
+			$this->fpm = new SSWP_File_Permission_Manager( $this->file_paths, $this->rcmnd_perms );
 			return $this;
 	}
-	public function get_fpm(): WPSS_File_Permission_Manager {
+	public function get_fpm(): SSWP_File_Permission_Manager {
 			return empty( $this->fpm ) ? $this->set_fpm()->fpm : $this->fpm;
 	}
 

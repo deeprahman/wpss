@@ -7,10 +7,10 @@
  * @param  WP_REST_Request $request Current REST request.
  * @return bool true if limit exceeded.
  */
-function wpss_limit_rest_api_rate( $result, $server, $request ) {
+function sswp_limit_rest_api_rate( $result, $server, $request ) {
 	// Get the endpoints to apply rate limiting
-	$endpoints = isset( $GLOBALS['wpss'] ) && method_exists( $GLOBALS['wpss'], 'get_rest_endpoints_for_limiting' )
-		? $GLOBALS['wpss']->get_rest_endpoints_for_limiting()
+	$endpoints = isset( $GLOBALS['sswp'] ) && method_exists( $GLOBALS['sswp'], 'get_rest_endpoints_for_limiting' )
+		? $GLOBALS['sswp']->get_rest_endpoints_for_limiting()
 		: array( '/wp/v2/users' );
 	$route     = $request->get_route();
 	// Target only the desired endpoints
@@ -19,20 +19,20 @@ function wpss_limit_rest_api_rate( $result, $server, $request ) {
 	}
 
 	// Get the client IP address
-	$client_ip = wpss_get_client_ip(); // Assume wpss_get_client_ip() is defined elsewhere
+	$client_ip = sswp_get_client_ip(); // Assume sswp_get_client_ip() is defined elsewhere
 	$cache_key = 'rest_api_rate_limit_' . md5( $client_ip . $request->get_route() );
 
 	// Get the current call count
 	$call_data = get_transient( $cache_key );
 
 	// Set rate limit parameters
-	$max_calls   = $GLOBALS['wpss']->get_max_call_for_limiting(); // Maximum API calls allowed
-	$time_window = $GLOBALS['wpss']->get_time_window_for_limiting(); // Time window in seconds
+	$max_calls   = $GLOBALS['sswp']->get_max_call_for_limiting(); // Maximum API calls allowed
+	$time_window = $GLOBALS['sswp']->get_time_window_for_limiting(); // Time window in seconds
 
 	if ( $call_data ) {
 		// Check if the client exceeded the limit
 		if ( $call_data['count'] >= $max_calls ) {
-			wpss_logger( 'INFO', 'API call limit exceeded for IP : ' . $client_ip, __FUNCTION__ );
+			sswp_logger( 'INFO', 'API call limit exceeded for IP : ' . $client_ip, __FUNCTION__ );
 			return true;
 		} else {
 			// Increment the call count
@@ -49,9 +49,9 @@ function wpss_limit_rest_api_rate( $result, $server, $request ) {
 }
 
 
-function wpss_handle_rate_limiting( $result, $server, $request ) {
-	global $wpss;
-	$ht_form_settings = ( get_options( array( $wpss->settings ) ) )['_wpss_settings']['htaccess']['ht_form'];
+function sswp_handle_rate_limiting( $result, $server, $request ) {
+	global $sswp;
+	$ht_form_settings = ( get_options( array( $sswp->settings ) ) )['_sswp_settings']['htaccess']['ht_form'];
 	$output           = false;
 		array_walk(
 			$ht_form_settings,
@@ -60,7 +60,7 @@ function wpss_handle_rate_limiting( $result, $server, $request ) {
 					return;
 				}
 				if ( $v['value'] == 'on' ) {
-					$output = wpss_limit_rest_api_rate( $result, $server, $request );
+					$output = sswp_limit_rest_api_rate( $result, $server, $request );
 				}
 			}
 		);
@@ -77,4 +77,4 @@ function wpss_handle_rate_limiting( $result, $server, $request ) {
 }
 
 // Hook into the REST API pre-dispatch filter
-add_filter( 'rest_pre_dispatch', 'wpss_handle_rate_limiting', 10, 3 );
+add_filter( 'rest_pre_dispatch', 'sswp_handle_rate_limiting', 10, 3 );

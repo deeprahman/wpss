@@ -3,7 +3,7 @@
 
 if (! function_exists('wpss_logger') ) {
 
-    function wpss_logger( $type, $log, $function )
+    function sswp_logger( $type, $log, $function )
     {
 
         $formatted_log = $type . ': [' . date('Y-m-d H:i:s') . '] ' . ' Function: ' . $function . ' ';

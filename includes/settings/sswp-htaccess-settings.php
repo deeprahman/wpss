@@ -23,7 +23,7 @@ $htaccess_from_settings['ht_form'] = array(
 		'value' => 'off',
 	),
 	array(
-		'name'  => 'allowed_files',
+		'name'  => 'sswp_allowed_files',
 		'value' => array(),
 	),
 );

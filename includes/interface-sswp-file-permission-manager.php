@@ -16,7 +16,7 @@
  * @property array $files_to_check Array of file/directory paths to check relative to ABSPATH
  * @property array $recommended_permissions Array of recommended permissions for files and directories
  */
-interface IWPSS_File_Permission_manager {
+interface ISSWP_File_Permission_manager {
 
 	/**
 	 * Checks permissions for all configured files and directories.

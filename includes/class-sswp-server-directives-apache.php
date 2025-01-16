@@ -1,10 +1,10 @@
 <?php
 
-require_once WP_Securing_Setup::ROOT . DIRECTORY_SEPARATOR . 'includes/class-wpss-server-directives.php';
-require_once WP_Securing_Setup::ROOT . DIRECTORY_SEPARATOR . 'includes/interface-wpss-server-directives.php';
+require_once SSWP_Secure_Setup::ROOT . DIRECTORY_SEPARATOR . 'includes/class-sswp-server-directives.php';
+require_once SSWP_Secure_Setup::ROOT . DIRECTORY_SEPARATOR . 'includes/interface-sswp-server-directives.php';
 // require_once ABSPATH . 'wp-admin/includes/misc.php';  // TODO: To be removed
 
-class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IWPSS_Server_Directives {
+class SSWP_Server_Directives_Apache extends SSWP_Server_Directives implements ISSWP_Server_Directives {
 
 
 
@@ -16,7 +16,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 		}
 	}
 
-	public function add_rule( $rules, $htaccess_path = '', $marker = 'wpss' ): bool {
+	public function add_rule( $rules, $htaccess_path = '', $marker = 'sswp' ): bool {
 
 		if ( $this->is_apache || $this->is_litespeed ) {
 			return $this->add_apache_rule( $rules, $htaccess_path, $marker );
@@ -24,7 +24,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 		return false;
 	}
 
-	public function remove_rule( $htaccess_path = '', string $marker = 'wpss' ) {
+	public function remove_rule( $htaccess_path = '', string $marker = 'sswp' ) {
 
 		if ( $this->is_apache || $this->is_litespeed ) {
 			return $this->remove_apache_rule( $htaccess_path, $marker );
@@ -32,7 +32,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 		return false;
 	}
 
-	private function add_apache_rule( $rules, $htaccess_path = '', string $marker = 'wpss' ) {
+	private function add_apache_rule( $rules, $htaccess_path = '', string $marker = 'sswp' ) {
 
 		if ( ! $this->validate_htaccess_syntax( $rules ) ) {
 			return false;
@@ -87,7 +87,7 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 	 * @param  string $marker
 	 * @return bool
 	 */
-	private function remove_apache_rule( $htaccess_path = '', string $marker = 'wpss' ) {
+	private function remove_apache_rule( $htaccess_path = '', string $marker = 'sswp' ) {
 		$htaccess_file = $htaccess_path ?: $this->home_path . '.htaccess';
 
 		if ( ! $this->wp_filesystem->exists( $htaccess_file ) ) {
@@ -197,28 +197,28 @@ class WPSS_Server_Directives_Apache extends WPSS_Server_Directives implements IW
 	 * @return mixed regex string of file extension
 	 */
 	protected function file_ext_regex_creator( array $file_ext ): mixed {
-		global $wpss;
-		$file_path = $wpss->root . 'includes/class-wpss-file-regex-pattern-creator.php';
+		global $sswp;
+		$file_path = $sswp->root . 'includes/class-wpss-file-regex-pattern-creator.php';
 		if ( ! file_exists( $file_path ) ) {
 			return new WP_Error( 'File Not Exists: ' . $file_path );
 		}
 		include_once $file_path;
 		// BUG: Null
-		$extension_map = $wpss->get_extension_map();
+		$extension_map = $sswp->get_extension_map();
 
-		$regex_pat = new WPSS_File_Regex_Pattern_Creator( $file_ext, $extension_map );
+		$regex_pat = new SSWP_File_Regex_Pattern_Creator( $file_ext, $extension_map );
 		// call generateApacheExtensionRegex method
 		$regex = $regex_pat->generateApacheExtensionRegex();
 		return $regex;
 	}
 	protected function validate_htaccess_syntax( string $rules ): mixed {
-		global $wpss;
-		$file_path = $wpss->root . 'includes/class-wpss-apache-directives-validator.php';
+		global $sswp;
+		$file_path = $sswp->root . 'includes/class-wpss-apache-directives-validator.php';
 		if ( ! file_exists( $file_path ) ) {
 			return new WP_Error( 'File Not Exists: ' . $file_path );
 		}
 		include_once $file_path;
-		$validator = new WPSS_Apache_Directives_Validator();
+		$validator = new SSWP_Apache_Directives_Validator();
 		return $validator->is_valid( $rules );
 	}
 }

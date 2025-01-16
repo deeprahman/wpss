@@ -46,7 +46,7 @@
 // ),
 // );
 
-require_once WPSS_ROOT . 'includes/class-wpss-file-permission-manager.php';
+require_once sswp_ROOT . 'includes/class-sswp-file-permission-manager.php';
 // TODO: Get file permissions
 try {
 	$ret['rcmnd_perms'] = array(
@@ -56,7 +56,7 @@ try {
 	);
 
 	$ret['paths']       = array( './', 'wp-config.php', 'wp-content', 'wp-content/uploads', 'wp-content/plugins', 'wp-content/themes' );
-	$ret['chk_results'] = ( new WPSS_File_Permission_Manager( $ret['paths'] ) )->check_permissions();
+	$ret['chk_results'] = ( new SSWP_File_Permission_Manager( $ret['paths'] ) )->check_permissions();
 	return $ret;
 } catch ( \Exception $ex ) {
 	error_log( $ex->getMessage() );

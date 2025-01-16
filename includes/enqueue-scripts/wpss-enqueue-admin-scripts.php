@@ -1,35 +1,35 @@
 <?php
 
-global $wpss;
+global $sswp;
 // $admin_page passed from included page
-if ( 'tools_page_wpss-files-permission' !== $admin_page ) {
+if ( 'tools_page_sswp-files-permission' !== $admin_page ) {
 	return;
 }
 
 
-$asset_file = WPSS_ROOT . 'build/index.asset.php';
+$asset_file = SSWP_ROOT . 'build/index.asset.php';
 
 if ( ! file_exists( $asset_file ) ) {
 	new WP_Error( 'Asset File does not exists' );
 }
-$index_js  = WPSS_URL . 'build/index.js';
-$index_css = WPSS_URL . 'build/index.css';
+$index_js  = SSWP_URL . 'build/index.js';
+$index_css = SSWP_URL . 'build/index.css';
 
 if ( ! file_exists( $index_js ) ) {
 	new WP_Error( 'JS File does not exists' );
-	wpss_logger( 'Info', 'JS File does not exists', __FILE__ );
+	sswp_logger( 'Info', 'JS File does not exists', __FILE__ );
 }
 
 if ( ! file_exists( $index_css ) ) {
 	new WP_Error( 'CSS File does not exists' );
 
-	wpss_logger( 'Info', 'CSS File does not exists', __FILE__ );
+	sswp_logger( 'Info', 'CSS File does not exists', __FILE__ );
 }
 
 $asset = include $asset_file;
 
 wp_enqueue_script(
-	$wpss->js_handle,
+	$sswp->js_handle,
 	$index_js,
 	$asset['dependencies'],
 	$asset['version'],
@@ -39,7 +39,7 @@ wp_enqueue_script(
 );
 
 wp_enqueue_style(
-	$wpss->css_handle,
+	$sswp->css_handle,
 	$index_css,
 	array(),
 	$asset['version']
@@ -66,11 +66,11 @@ enqueue_jquery_scripts();
 
 
 wp_localize_script(
-	$wpss->js_handle,
+	$sswp->js_handle,
 	'WpssRest',
 	array(
 		'rest_url'     => esc_url_raw( rest_url() ),
-		'nonce'        => wp_create_nonce( $wpss->nonce_action ), // Use 'wp_rest' as the action for REST API
+		'nonce'        => wp_create_nonce( $sswp->nonce_action ), // Use 'wp_rest' as the action for REST API
 		'current_user' => wp_get_current_user()->data->user_login, // Optional: Pass current user info
 	)
 );

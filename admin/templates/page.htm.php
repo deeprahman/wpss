@@ -18,7 +18,7 @@
 		<wp-permissions-table></wp-permissions-table>
 	</div>
 	<div id="tab-2">
-		<?php require_once WP_Securing_Setup::ROOT . DIRECTORY_SEPARATOR . 'admin/templates/protection-form.htm.php'; ?>
+		<?php require_once SSWP_Secure_Setup::ROOT . DIRECTORY_SEPARATOR . 'admin/templates/protection-form.htm.php'; ?>
 	</div>
 	<div id="tab-3">
 		<form id="form-3" class="tab-form" disabled>

@@ -1,6 +1,6 @@
 <?php
 
-class WPSS_Apache_Directives_Validator {
+class SSWP_Apache_Directives_Validator {
 
 
 	// Existing directives array remains unchanged

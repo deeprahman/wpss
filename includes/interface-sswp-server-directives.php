@@ -1,6 +1,6 @@
 <?php
 
-interface IWPSS_Server_Directives {
+interface ISSWP_Server_Directives {
 
 	public function protect_debug_log();
 

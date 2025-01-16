@@ -1,5 +1,5 @@
 <?php
-trait WPSS_Ownership_Permission_Trait {
+trait SSWP_Ownership_Permission_Trait {
 
 	/**
 	 * WordPress Filesystem instance

@@ -2,18 +2,18 @@
 /**
  * Do .htaccess form related stuff
  */
-global $wpss;
-require_once $wpss->root . DIRECTORY_SEPARATOR . 'includes/class-wpss-server-directives-apache.php';
-require_once $wpss->root . DIRECTORY_SEPARATOR . 'includes/class-wpss-server-directives-factory.php';
+global $sswp;
+require_once $sswp->root . DIRECTORY_SEPARATOR . 'includes/class-sswp-server-directives-apache.php';
+require_once $sswp->root . DIRECTORY_SEPARATOR . 'includes/class-sswp-server-directives-factory.php';
 
 try {
-	$GLOBALS['wpss_sd'] = $sd = WPSS_Server_Directives_Factory::create_server_directives();
+	$GLOBALS['sswp_sd'] = $sd = SSWP_Server_Directives_Factory::create_server_directives();
 } catch ( Exception $ex ) {
 }
 
 $GLOBALS['allowed_functions'] = $allowed_functions = array(
-	'protect-debug-log' => 'protect_debug_log',
-	'allowed_files'     => 'protect_update_directory', // NOTE: make the file name consistent
+	'protect-debug-log' => 'sswp_protect_debug_log',
+	'sswp_allowed_files'     => 'sswp_protect_update_directory', // NOTE: make the file name consistent
 );
 
 /**
@@ -28,9 +28,9 @@ $GLOBALS['allowed_functions'] = $allowed_functions = array(
  *                     array( "jpeg", "gif" ) ) );
  * @return array|mixed
  */
-function handle_htaccess_post_req( $data ) {
-	$sd                           = $GLOBALS['wpss_sd'];
-	$GLOBALS['htaccess_settings'] = $htaccess_from_settings = wpss_save_htaccess_option( $data );
+function sswp_handle_htaccess_post_req( $data ) {
+	$sd                           = $GLOBALS['sswp_sd'];
+	$GLOBALS['htaccess_settings'] = $htaccess_from_settings = sswp_save_htaccess_option( $data );
 	// Walk through the $data array
 	foreach ( $htaccess_from_settings['ht_form'] as $item ) {
 		$name  = $item['name'];
@@ -49,7 +49,7 @@ function handle_htaccess_post_req( $data ) {
 			}
 		}
 	}
-	return from_data_with_message( 'Form Saved' );
+	return sswp_from_data_with_message( 'Form Saved' );
 }
 
 /**
@@ -61,9 +61,9 @@ function handle_htaccess_post_req( $data ) {
 		'data' => json_encode($ht_form)
 	]
  */
-function from_data_with_message( $message ): array {
-	global $wpss;
-	$ht_form = $wpss->get_ht_form();
+function sswp_from_data_with_message( $message ): array {
+	global $sswp;
+	$ht_form = $sswp->get_ht_form();
 	$message = array(
 		'message' => $message,
 		'data'    => json_encode( $ht_form ),
@@ -71,20 +71,20 @@ function from_data_with_message( $message ): array {
 	return $message;
 }
 
-function handle_htaccess_get_req() {
-	return from_data_with_message( __('Form Data return', 'secure-setup') );
+function sswp_handle_htaccess_get_req() {
+	return sswp_from_data_with_message( __('Form Data return', 'secure-setup') );
 }
-function wpss_save_htaccess_option( $new = array() ) {
-	global $wpss;
-	$cur = get_options( array( $wpss->settings ) );
+function sswp_save_htaccess_option( $new = array() ) {
+	global $sswp;
+	$cur = get_options( array( $sswp->settings ) );
 
-	$cur['_wpss_settings']['htaccess']['ht_form'] = $new;
-	update_option( $wpss->settings, $cur['_wpss_settings'] );
-	$new = get_options( array( $wpss->settings ) );
-	return $new[ $wpss->settings ]['htaccess'];
+	$cur['_sswp_settings']['htaccess']['ht_form'] = $new;
+	update_option( $sswp->settings, $cur['_sswp_settings'] );
+	$new = get_options( array( $sswp->settings ) );
+	return $new[ $sswp->settings ]['htaccess'];
 }
 
-function protect_debug_log( $d, IWPSS_Server_Directives $sd ) {
+function sswp_protect_debug_log( $d, ISSWP_Server_Directives $sd ) {
 	if ( $d === 'on' ) {
 		$sd->unprotect_debug_log();
 		$sd->protect_debug_log();
@@ -93,7 +93,7 @@ function protect_debug_log( $d, IWPSS_Server_Directives $sd ) {
 	}
 }
 
-function protect_update_directory( $d, IWPSS_Server_Directives $sd, &$ht_form = array() ) {
+function sswp_protect_update_directory( $d, ISSWP_Server_Directives $sd, &$ht_form = array() ) {
 	$is_uploads_checked = array_filter(
 		$ht_form,
 		function ( $v ) {
@@ -101,7 +101,7 @@ function protect_update_directory( $d, IWPSS_Server_Directives $sd, &$ht_form = 
 			return $is_checked;
 		}
 	);
-	$files              = allowed_files( $d );
+	$files              = sswp_allowed_files( $d );
 	if ( empty( $is_uploads_checked ) || empty( $files ) ) {
 		$sd->disallow_file_access();
 	} else {
@@ -111,7 +111,7 @@ function protect_update_directory( $d, IWPSS_Server_Directives $sd, &$ht_form = 
 }
 
 
-function protect_rest_endpoint( $d, IWPSS_Server_Directives $sd ) {
+function sswp_protect_rest_endpoint( $d, ISSWP_Server_Directives $sd ) {
 	// NOTE: function Not in use
 	if ( $d !== 'on' ) {
 		$sd->unprotect_user_rest_apt();
@@ -127,7 +127,7 @@ function protect_rest_endpoint( $d, IWPSS_Server_Directives $sd ) {
  * @param  array $d files extensions
  * @return array allowed files
  */
-function allowed_files( $d ): array {
+function sswp_allowed_files( $d ): array {
 	global $htaccess_from_settings;
 	if ( empty( $d ) ) {
 		return array();

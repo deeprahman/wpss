@@ -1,10 +1,6 @@
 # List of issues found
 
-##Blocking access to the users endpoint.
 
-Note that this endpoint is used by parts of WordPress like the visual editor to load the list of authors inside posts. We recommend you to warn of the negative side effects this can have or to user another method to solve this.
-# Block access to the users endpoint for any version of the API
-RewriteRule ^wp-json/wp/v[0-9]+/users.*$ - [R=404,L]
 
 ## The URL(s) declared in your plugin seems to be invalid or does not work.
 
@@ -84,20 +80,7 @@ wpss-logger.php:23 file_put_contents($log_file, $formatted_log, FILE_APPEND);
 
 
 
-## Internationalization: Text domain does not match plugin slug.
 
-In order to make a string translatable in your plugin you are using a set of special functions. These functions collectively are known as "gettext".
-
-These functions have a parameter called "text domain", which is a unique identifier for retrieving translated strings.
-
-This "text domain" must be the same as your plugin slug so that the plugin can be translated by the community using the tools provided by the directory. As for example, if this plugin slug is "secure-setup" the Internationalization functions should look like:
-esc_html__('Hello', 'secure-setup');
-
-From your plugin, you have set your text domain as follows:
-# This plugin is using the domain "wp-securing-setup" for 1 element(s).
-
-However, the current plugin slug is this:
-secure-setup
 
 
 ## Generic function/class/define/namespace/option names
